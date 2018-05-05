@@ -1,26 +1,35 @@
 import React from 'react'
 
 import gql from "graphql-tag";
-import { graphql } from 'react-apollo';
+import { graphql, Query } from 'react-apollo';
 
-function List({ data: { links=[] } }) {
-
-    console.log(222, links)
-    return (
-      <ul>
-        {links.map(({ id, url }) => (
-          <li key={id}>{url}</li>
-        ))}
-      </ul>
-    );
+const GET_LINKS = gql`
+query LinksQuery {
+  links {
+    id
+    url
+    description
   }
-  
-  export default graphql(gql`
-    query LinksQuery {
-      links {
-        id
-        url
-        description
-      }
-    }
-  `)(List);
+}
+`;
+
+function List() {
+    return (
+        <Query query={GET_LINKS} pollInterval={500}>
+            {({ loading, error, data, startPolling, stopPolling }) => {
+                if (loading) return "Loading...";
+                if (error) return `Error! ${error.message}`;
+                
+                return (
+                    <ul>
+                        {data.links.map(({ id, url }) => (
+                            <li key={id}>{url}</li>
+                        ))}
+                    </ul>
+                )
+            }}
+        </Query>
+    )
+  }
+
+export default List;
